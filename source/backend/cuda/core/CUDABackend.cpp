@@ -11,6 +11,8 @@
 
 #include <map>
 #include <mutex>
+#include <set>
+#include <sstream>
 #include "core/Macro.h"
 #include "shape/SizeComputer.hpp"
 #include "core/TensorUtils.hpp"
@@ -270,13 +272,26 @@ void CUDABackend::compile(CUmodule* dst, std::pair<string, string> code, std::ve
 
 Execution* CUDABackend::onCreate(const std::vector<Tensor*>& inputs, const std::vector<Tensor*>& outputs,
                                  const MNN::Op* op) {
-// #ifdef LOG_VERBOSE
-    // MNN_PRINT("Start CUDABackend::onCreate useFp16:%d\n", useFp16());
-// #endif
     auto opType = op->type();
     if (outputs.size() > 0) {
         if (TensorUtils::getDescribe(outputs[0])->quantAttr != nullptr && TensorUtils::getDescribe(outputs[0])->applyQuant) {
             opType = _getRealOpType(opType);
+        }
+    }
+
+    {
+        FILE* fbFile = fopen("mnn_cuda_fallback_ops.txt", "r");
+        if (fbFile) {
+            char fbBuf[4096] = {0};
+            size_t fbRead = fread(fbBuf, 1, 4095, fbFile);
+            fclose(fbFile);
+            if (fbRead > 0) {
+                std::string opName = EnumNameOpType(opType);
+                std::string envStr(fbBuf, fbRead);
+                if (envStr.find(opName) != std::string::npos) {
+                    return NULL;
+                }
+            }
         }
     }
     // MNN_PRINT("CUDABackend support type %s\n", EnumNameOpType(opType));
