@@ -323,16 +323,20 @@ public:
             auto cmd = mLoop->commands()->GetAs<RegionCommand>(i);
 
             if(cmd->fuse() > 0) {
-                // Currently don't need not add fuse
-                return nullptr;//
+                return nullptr;
             }
             if(cmd->fuse() == 0) {
                 if (cmd->op()->type() != OpType_BinaryOp) {
-                    // TODO: support afterwards
                     return nullptr;
                 }
                 auto bytes = static_cast<CUDABackend*>(backend)->getBytes(outputs[0]);
                 if (2 == bytes) {
+                    return nullptr;
+                }
+            }
+            if(cmd->fuse() < 0) {
+                auto opType = cmd->op()->type();
+                if (opType != OpType_UnaryOp && opType != OpType_MatMul && opType != OpType_BinaryOp) {
                     return nullptr;
                 }
             }
@@ -341,7 +345,6 @@ public:
             for (int i=0; i<mLoop->initCommand()->size(); ++i) {
                 auto cmd = mLoop->initCommand()->GetAs<RegionCommand>(i);
                 if (nullptr != cmd->op()) {
-                    // Currently don't support other init
                     return nullptr;
                 }
             }
