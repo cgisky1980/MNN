@@ -20,9 +20,16 @@ if(NOT DEFINED MNN_BUILD_DIR)
 endif()
 
 if(WIN32)
-    target_link_libraries(mnn_dit_bridge PRIVATE
-        ${MNN_BUILD_DIR}/Release/MNN.lib
-    )
+    # Check both Ninja (single-config) and VS (multi-config) output locations
+    if(EXISTS "${MNN_BUILD_DIR}/MNN.lib")
+        target_link_libraries(mnn_dit_bridge PRIVATE
+            ${MNN_BUILD_DIR}/MNN.lib
+        )
+    else()
+        target_link_libraries(mnn_dit_bridge PRIVATE
+            ${MNN_BUILD_DIR}/Release/MNN.lib
+        )
+    endif()
     target_compile_options(mnn_dit_bridge PRIVATE /MD)
 elseif(APPLE)
     target_link_libraries(mnn_dit_bridge PRIVATE
