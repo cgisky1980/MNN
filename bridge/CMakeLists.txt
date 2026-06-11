@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_library(mnn_dit_bridge SHARED mnn_dit_bridge.cpp)
 
+set_target_properties(mnn_dit_bridge PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
+
 target_include_directories(mnn_dit_bridge PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${CMAKE_CURRENT_SOURCE_DIR}/../3rd_party/half

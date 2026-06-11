@@ -11,6 +11,12 @@
 #include <MNN/HalideRuntime.h>
 #include "half.hpp"
 
+#ifdef _WIN32
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT __attribute__((visibility("default")))
+#endif
+
 extern "C" {
 
 struct MNNModel {
@@ -52,7 +58,7 @@ static bool debug_callback(const std::vector<MNN::Tensor*>& tensors, const MNN::
     return true;
 }
 
-__declspec(dllexport) MNNModel* mnn_model_create(
+DLL_EXPORT MNNModel* mnn_model_create(
     const char* model_path,
     int use_gpu,
     int threads,
@@ -105,7 +111,7 @@ __declspec(dllexport) MNNModel* mnn_model_create(
     return handle;
 }
 
-__declspec(dllexport) int mnn_model_set_debug(const char* output_path) {
+DLL_EXPORT int mnn_model_set_debug(const char* output_path) {
     if (g_debug_file) {
         fclose(g_debug_file);
         g_debug_file = nullptr;
@@ -118,7 +124,7 @@ __declspec(dllexport) int mnn_model_set_debug(const char* output_path) {
     return 0;
 }
 
-__declspec(dllexport) int mnn_model_resize(
+DLL_EXPORT int mnn_model_resize(
     MNNModel* handle,
     const char* input_name,
     int ndim,
@@ -132,13 +138,13 @@ __declspec(dllexport) int mnn_model_resize(
     return 0;
 }
 
-__declspec(dllexport) int mnn_model_resize_commit(MNNModel* handle) {
+DLL_EXPORT int mnn_model_resize_commit(MNNModel* handle) {
     if (!handle) return -1;
     handle->net->resizeSession(handle->session);
     return 0;
 }
 
-__declspec(dllexport) int mnn_model_set_input(
+DLL_EXPORT int mnn_model_set_input(
     MNNModel* handle,
     const char* input_name,
     const float* data,
@@ -172,7 +178,7 @@ __declspec(dllexport) int mnn_model_set_input(
     return 0;
 }
 
-__declspec(dllexport) int mnn_model_set_input_i64(
+DLL_EXPORT int mnn_model_set_input_i64(
     MNNModel* handle,
     const char* input_name,
     const int64_t* data,
@@ -201,7 +207,7 @@ __declspec(dllexport) int mnn_model_set_input_i64(
     return 0;
 }
 
-__declspec(dllexport) int mnn_model_run(MNNModel* handle) {
+DLL_EXPORT int mnn_model_run(MNNModel* handle) {
     if (!handle) return -1;
     if (g_debug_file) {
         auto before = [](const std::vector<MNN::Tensor*>&, const MNN::OperatorInfo*) -> bool { return true; };
@@ -213,7 +219,7 @@ __declspec(dllexport) int mnn_model_run(MNNModel* handle) {
     return (int)ret;
 }
 
-__declspec(dllexport) int mnn_model_get_output(
+DLL_EXPORT int mnn_model_get_output(
     MNNModel* handle,
     const char* output_name,
     float* out_data,
@@ -248,7 +254,7 @@ __declspec(dllexport) int mnn_model_get_output(
     return count;
 }
 
-__declspec(dllexport) int mnn_model_get_output_dims(
+DLL_EXPORT int mnn_model_get_output_dims(
     MNNModel* handle,
     const char* output_name,
     int* out_dims,
@@ -265,7 +271,7 @@ __declspec(dllexport) int mnn_model_get_output_dims(
     return ndim;
 }
 
-__declspec(dllexport) void mnn_model_destroy(MNNModel* handle) {
+DLL_EXPORT void mnn_model_destroy(MNNModel* handle) {
     if (!handle) return;
     handle->net->releaseSession(handle->session);
     MNN::Interpreter::destroy(handle->net);
