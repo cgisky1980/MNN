@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.14...3.30)
 project(mnn_dit_bridge CXX)
 
 set(CMAKE_CXX_STANDARD 17)
